@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ppe-detection-app"
+version = "1.0.0"
+description = "PPE Compliance Detection System for Industrial Environments"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = ["computer-vision", "yolo", "ppe-detection", "safety", "object-detection"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+    "ultralytics>=8.0.196",
+    "opencv-python>=4.8.1.78",
+    "opencv-python-headless>=4.8.1.78",
+    "numpy>=1.24.3",
+    "Pillow>=10.0.1",
+    "streamlit>=1.28.1",
+    "pyyaml>=6.0.1",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+gpu = ["torch>=2.0.1", "torchvision>=0.15.2"]
+
+[project.scripts]
+ppe-detect = "src.inference:main"
+ppe-train = "src.train:main"
+ppe-dashboard = "app.dashboard:main"
+
+[tool.setuptools]
+packages = ["src", "app", "config"]
+
+[tool.setuptools.package-data]
+config = ["*.yaml"]

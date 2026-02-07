@@ -1,0 +1,45 @@
+# PPE Compliance Detection System Configuration
+
+# Model Configuration
+model:
+  weights_path: "models/trained/best.pt"
+  confidence_threshold: 0.5
+  iou_threshold: 0.4
+  device: "cpu"   # change to "cuda" if GPU available
+
+# Classes (MUST match data.yaml)
+classes:
+  helmet: 0
+  vest: 1
+  without_helmet: 2
+  without_vest: 3
+
+# Violation Logic Configuration
+violation:
+  violation_classes:
+    - without_helmet
+    - without_vest
+
+# Storage Configuration
+storage:
+  violations_dir: "violations"
+  log_file: "violations/violations_log.json"
+  save_violations: true
+  image_format: "jpg"
+
+# Dashboard Configuration
+dashboard:
+  title: "PPE Compliance Detection System"
+  page_icon: "🦺"
+  layout: "wide"
+  max_video_fps: 30
+
+# Visualization
+visualization:
+  bbox_thickness: 2
+  text_size: 0.6
+  colors:
+    helmet: [0, 255, 0]
+    vest: [0, 255, 255]
+    without_helmet: [0, 0, 255]
+    without_vest: [255, 0, 0]

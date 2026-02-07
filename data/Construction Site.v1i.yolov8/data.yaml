@@ -1,0 +1,13 @@
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 4
+names: ['helmet', 'vest', 'without_helmet', 'without_vest']
+
+roboflow:
+  workspace: tirth-workspace
+  project: construction-site-w6hto
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/tirth-workspace/construction-site-w6hto/dataset/1

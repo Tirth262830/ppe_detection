@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Training outputs
+models/ppe_detection*/
+models/runs/
+runs/
+*.pt
+!models/trained/best.pt
+
+# Data (comment out if you want to track dataset)
+# data/construction_ppe/train/
+# data/construction_ppe/valid/
+# data/construction_ppe/test/
+
+# Violations and logs
+violations/*.jpg
+violations/*.png
+violations/*.json
+!violations/.gitkeep
+
+# Temporary files
+*.tmp
+*.log
+*.cache
+temp/
+tmp/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# System files
+Thumbs.db
+.DS_Store
+
+# Output files
+*.mp4
+*.avi
+output_*.jpg
+result_*.jpg
+test_result.*
+
+# Environment variables
+.env
+.env.local
