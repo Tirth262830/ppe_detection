@@ -40,6 +40,8 @@ class FrameProcessor:
         print("✅ Frame Processor initialized")
 
     # --------------------------------------------------
+    # CORE FRAME PROCESSING
+    # --------------------------------------------------
 
     def process_frame(
         self,
@@ -83,6 +85,8 @@ class FrameProcessor:
         }
 
     # --------------------------------------------------
+    # IMAGE PROCESSING
+    # --------------------------------------------------
 
     def process_image(
         self, image_path: str, output_path: Optional[str] = None
@@ -102,6 +106,8 @@ class FrameProcessor:
 
         return result
 
+    # --------------------------------------------------
+    # VIDEO PROCESSING
     # --------------------------------------------------
 
     def process_video(
@@ -181,6 +187,47 @@ class FrameProcessor:
         return stats
 
     # --------------------------------------------------
+    # WEBCAM PROCESSING
+    # --------------------------------------------------
+
+    def process_webcam(self, camera_id: int = 0):
+        """
+        Real-time webcam processing
+        """
+        print(f"Starting webcam (camera {camera_id})")
+        print("Press 'q' to quit")
+
+        cap = cv2.VideoCapture(camera_id)
+        if not cap.isOpened():
+            raise ValueError(f"Could not open camera {camera_id}")
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            result = self.process_frame(
+                frame,
+                save_violation=True,
+                source_name=f"webcam_{camera_id}"
+            )
+
+            display_frame = resize_with_aspect_ratio(
+                result["annotated_frame"]
+            )
+
+            cv2.imshow("PPE Detection - Webcam", display_frame)
+
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+
+        cap.release()
+        cv2.destroyAllWindows()
+        print("Webcam stopped")
+
+    # --------------------------------------------------
+    # INTERNAL HELPERS
+    # --------------------------------------------------
 
     def _save_violation_image(
         self,
@@ -199,38 +246,3 @@ class FrameProcessor:
         }
 
         save_violation_image(frame, self.violations_dir, violation_info)
-
-def process_webcam(self, camera_id: int = 0):
-    """
-    Real-time webcam processing
-    """
-    print(f"Starting webcam (camera {camera_id})")
-    print("Press 'q' to quit")
-
-    cap = cv2.VideoCapture(camera_id)
-    if not cap.isOpened():
-        raise ValueError(f"Could not open camera {camera_id}")
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        result = self.process_frame(
-            frame,
-            save_violation=True,
-            source_name=f"webcam_{camera_id}"
-        )
-
-        display_frame = resize_with_aspect_ratio(
-            result["annotated_frame"]
-        )
-
-        cv2.imshow("PPE Detection - Webcam", display_frame)
-
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-    print("Webcam stopped")
