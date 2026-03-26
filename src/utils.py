@@ -1,35 +1,29 @@
-"""
-Utility functions for PPE Compliance Detection System
-FINAL – robust, Windows-safe, JSON-safe
-"""
+"""Utility functions for the PPE compliance detection system."""
 
-import os
 import json
-import yaml
+import os
 from datetime import datetime
 from pathlib import Path
+
 import cv2
 import numpy as np
+import yaml
 
-
-# ---------------- CONFIG ---------------- #
 
 def load_config(config_path: str = "config/config.yaml") -> dict:
-    """Load configuration from YAML file"""
-    with open(config_path, "r") as f:
-        return yaml.safe_load(f)
+    """Load configuration from a YAML file."""
+    with open(config_path, "r", encoding="utf-8") as file:
+        return yaml.safe_load(file)
 
 
 def ensure_dir(directory: str) -> None:
-    """Create directory if it doesn't exist"""
+    """Create a directory if it does not already exist."""
     if directory:
         Path(directory).mkdir(parents=True, exist_ok=True)
 
 
-# ---------------- GEOMETRY ---------------- #
-
 def calculate_iou(box1: list, box2: list) -> float:
-    """Calculate Intersection over Union (IoU)"""
+    """Calculate intersection over union."""
     x1_min, y1_min, x1_max, y1_max = box1
     x2_min, y2_min, x2_max, y2_max = box2
 
@@ -44,17 +38,15 @@ def calculate_iou(box1: list, box2: list) -> float:
     inter_area = (inter_x_max - inter_x_min) * (inter_y_max - inter_y_min)
     box1_area = (x1_max - x1_min) * (y1_max - y1_min)
     box2_area = (x2_max - x2_min) * (y2_max - y2_min)
-
     union_area = box1_area + box2_area - inter_area
+
     return inter_area / union_area if union_area > 0 else 0.0
 
 
 def is_bbox_inside(inner_box: list, outer_box: list, iou_threshold: float = 0.3) -> bool:
-    """Check if PPE bbox overlaps person bbox"""
+    """Check whether one bounding box overlaps enough with another."""
     return calculate_iou(inner_box, outer_box) >= iou_threshold
 
-
-# ---------------- DRAWING ---------------- #
 
 def draw_bbox(
     image: np.ndarray,
@@ -64,19 +56,22 @@ def draw_bbox(
     thickness: int = 2,
     text_size: float = 0.6,
 ) -> np.ndarray:
-    """Draw bounding box with label"""
+    """Draw a labeled bounding box."""
     x1, y1, x2, y2 = map(int, bbox)
 
     cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
 
-    (tw, th), baseline = cv2.getTextSize(
-        label, cv2.FONT_HERSHEY_SIMPLEX, text_size, thickness
+    (text_width, text_height), baseline = cv2.getTextSize(
+        label,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        text_size,
+        thickness,
     )
 
     cv2.rectangle(
         image,
-        (x1, y1 - th - baseline - 6),
-        (x1 + tw, y1),
+        (x1, y1 - text_height - baseline - 6),
+        (x1 + text_width, y1),
         color,
         -1,
     )
@@ -94,12 +89,12 @@ def draw_bbox(
     return image
 
 
-# ---------------- FILE OUTPUT ---------------- #
-
 def save_violation_image(
-    image: np.ndarray, violations_dir: str, violation_info: dict
+    image: np.ndarray,
+    violations_dir: str,
+    violation_info: dict,
 ) -> str:
-    """Save violation image"""
+    """Save an annotated violation image."""
     ensure_dir(violations_dir)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -111,66 +106,54 @@ def save_violation_image(
 
 
 def log_violation(log_file: str, violation_data: dict) -> None:
-    """
-    SAFE JSON logger
-    - creates file if missing
-    - handles empty / corrupt JSON
-    """
-
+    """Append a violation record to a JSON log file safely."""
     ensure_dir(os.path.dirname(log_file))
 
-    # Load existing data safely
     if not os.path.exists(log_file) or os.path.getsize(log_file) == 0:
         logs = []
     else:
         try:
-            with open(log_file, "r", encoding="utf-8") as f:
-                logs = json.load(f)
+            with open(log_file, "r", encoding="utf-8") as file:
+                logs = json.load(file)
         except (json.JSONDecodeError, OSError):
             logs = []
 
-    # Add timestamp if missing
     violation_data.setdefault("timestamp", datetime.now().isoformat())
-
     logs.append(violation_data)
 
-    with open(log_file, "w", encoding="utf-8") as f:
-        json.dump(logs, f, indent=4)
+    with open(log_file, "w", encoding="utf-8") as file:
+        json.dump(logs, file, indent=4)
 
-
-# ---------------- HELPERS ---------------- #
 
 def format_confidence(confidence: float) -> str:
-    """Format confidence score"""
+    """Format a confidence score."""
     return f"{confidence * 100:.1f}%"
 
 
 def resize_with_aspect_ratio(
-    image: np.ndarray, max_width: int = 1280, max_height: int = 720
+    image: np.ndarray,
+    max_width: int = 1280,
+    max_height: int = 720,
 ) -> np.ndarray:
-    """Resize image while maintaining aspect ratio"""
-    h, w = image.shape[:2]
-    scale = min(max_width / w, max_height / h)
+    """Resize while preserving aspect ratio."""
+    height, width = image.shape[:2]
+    scale = min(max_width / width, max_height / height)
 
     if scale < 1:
-        new_w = int(w * scale)
-        new_h = int(h * scale)
-        return cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
+        new_width = int(width * scale)
+        new_height = int(height * scale)
+        return cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
     return image
 
 
-# ---------------- SUMMARY ---------------- #
-
 def create_detection_summary(detections: dict) -> dict:
-    """
-    Create detection summary
-    (aligned with current dataset – no 'person' class)
-    """
-    total_objects = sum(len(v) for v in detections.values())
+    """Create summary counts from normalized detections."""
+    total_objects = sum(len(items) for items in detections.values())
 
     return {
         "total_detections": total_objects,
+        "person": len(detections.get("person", [])),
         "helmet": len(detections.get("helmet", [])),
         "vest": len(detections.get("vest", [])),
         "without_helmet": len(detections.get("without_helmet", [])),
